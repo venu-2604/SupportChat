@@ -1,0 +1,73 @@
+services:
+  backend:
+    build: ./backend
+    container_name: cs_backend
+    env_file:
+      - ./backend/.env
+    environment:
+      - GOOGLE_API_KEY=AIzaSyCzDimf18EPEsmGFmSiNP8sIPxyCJdbE1Y
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+    depends_on:
+      - postgres
+      - mongo
+      - redis
+    networks:
+      - appnet
+
+  frontend:
+    build: ./frontend
+    container_name: cs_frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE=http://localhost:8000
+      - VITE_SOCKET_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - appnet
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: cs_postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=saniya9900
+      - POSTGRES_DB=csupport
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - appnet
+
+  mongo:
+    image: mongo:6
+    container_name: cs_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - appnet
+
+  redis:
+    image: redis:7-alpine
+    container_name: cs_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
+
+volumes:
+  pgdata:
+  mongodata:
+
+
