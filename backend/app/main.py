@@ -25,7 +25,13 @@ def create_app() -> FastAPI:
     app.include_router(admin.router, prefix=settings.API_PREFIX, tags=["admin"])
 
     # Socket.IO
-    sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
+    # Increase ping timeout to avoid premature disconnects behind proxies (CF/Netlify/Render)
+    sio = socketio.AsyncServer(
+        async_mode="asgi",
+        cors_allowed_origins="*",
+        ping_timeout=60_000,  # ms
+        ping_interval=25_000,  # ms
+    )
     asgi_app = socketio.ASGIApp(sio, other_asgi_app=app)
     register_socketio(sio)
     register_events(app)
