@@ -1,7 +1,10 @@
 import axios from 'axios'
 
+const DEFAULT_API_BASE = import.meta.env.VITE_API_BASE
+  || (import.meta.env.PROD ? 'https://supportchat-j0ja.onrender.com' : 'http://localhost:8000')
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || 'http://localhost:8000',
+  baseURL: DEFAULT_API_BASE,
   withCredentials: false,
 })
 

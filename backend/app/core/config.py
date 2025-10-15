@@ -27,6 +27,7 @@ class Settings(BaseSettings):
 
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
+    REDIS_URL: str | None = None
 
     TWOFA_ISSUER: str = "CSupport"
 
