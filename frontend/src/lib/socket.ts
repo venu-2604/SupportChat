@@ -20,4 +20,16 @@ export const socket = io(DEFAULT_SOCKET_URL, {
 // @ts-ignore
 if (typeof window !== 'undefined') (window as any).socket = socket
 
+// Verbose client-side logging for diagnostics in production
+socket.on('connect', () => console.log('🔗 socket connected:', socket.id))
+socket.on('disconnect', (reason) => console.log('❌ socket disconnected:', reason))
+socket.on('connect_error', (err) => console.log('⚠️ socket connect_error:', err?.message || err))
+socket.onAny((event, ...args) => {
+  try {
+    console.log('📨 socket event:', event, JSON.stringify(args?.[0] ?? null))
+  } catch {
+    console.log('📨 socket event:', event, args)
+  }
+})
+
 
