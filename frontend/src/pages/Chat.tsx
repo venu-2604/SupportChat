@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { socket } from '../lib/socket'
 
-type Msg = { role: 'user' | 'assistant', content: string, showResolutionButtons?: boolean, related?: string[] }
+type Msg = { role: 'user' | 'assistant', content: string, showResolutionButtons?: boolean, related?: string[], isThinking?: boolean }
 type Prefill = { name: string; email: string; subject: string; category: string }
 
 export default function Chat() {
@@ -26,7 +26,11 @@ export default function Chat() {
       const showButtons = msg.content.includes('✅ Does this answer resolve your issue?')
       const related = Array.isArray(msg.related) ? msg.related : []
       console.log('🔍 Processed related array:', related, 'Length:', related.length)
-      setMessages(m => [...m, { role: 'assistant', content: msg.content, showResolutionButtons: showButtons, related }])
+      setMessages(m => {
+        // Remove any existing "AI is thinking..." messages
+        const filteredMessages = m.filter(msg => !msg.isThinking)
+        return [...filteredMessages, { role: 'assistant', content: msg.content, showResolutionButtons: showButtons, related }]
+      })
     }
     socket.on('bot_message', onBot)
     return () => { socket.off('bot_message', onBot) }
@@ -94,6 +98,10 @@ export default function Chat() {
     const text = input.trim()
     if (!text) return
     setMessages(m => [...m, { role: 'user', content: text }])
+    
+    // Add "AI is thinking..." message immediately after user message
+    setMessages(m => [...m, { role: 'assistant', content: 'AI is thinking...', isThinking: true }])
+    
     socket.emit('chat_message', {
       session_id: sessionIdRef.current,
       content: text,
@@ -109,6 +117,10 @@ export default function Chat() {
     const t = text.trim()
     if (!t) return
     setMessages(m => [...m, { role: 'user', content: t }])
+    
+    // Add "AI is thinking..." message immediately after user message
+    setMessages(m => [...m, { role: 'assistant', content: 'AI is thinking...', isThinking: true }])
+    
     socket.emit('chat_message', {
       session_id: sessionIdRef.current,
       content: t,
@@ -123,6 +135,10 @@ export default function Chat() {
   const confirmResolution = (confirmed: boolean) => {
     const message = confirmed ? 'Yes, that resolves my issue. Thank you!' : 'No, I still need help with this.'
     setMessages(m => [...m, { role: 'user', content: message }])
+    
+    // Add "AI is thinking..." message immediately after user message
+    setMessages(m => [...m, { role: 'assistant', content: 'AI is thinking...', isThinking: true }])
+    
     socket.emit('chat_message', {
       session_id: sessionIdRef.current,
       content: message,
@@ -247,7 +263,12 @@ export default function Chat() {
                   ? 'bg-blue-600 text-white order-1' 
                   : 'bg-gray-100 text-gray-900 order-2'
                 }`}>
-                  <div className="whitespace-pre-wrap">{m.content}</div>
+                  <div className="whitespace-pre-wrap flex items-center gap-2">
+                    {m.content}
+                    {m.isThinking && (
+                      <span className="text-gray-500 text-sm">🌙</span>
+                    )}
+                  </div>
                   {m.related && m.related.length > 0 && (
                     <div className="mt-3">
                       <div className="text-xs font-semibold text-gray-600 mb-2">Related questions:</div>
