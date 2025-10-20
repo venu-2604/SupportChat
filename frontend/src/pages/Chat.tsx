@@ -263,12 +263,14 @@ export default function Chat() {
                   ? 'bg-blue-600 text-white order-1' 
                   : 'bg-gray-100 text-gray-900 order-2'
                 }`}>
-                  <div className="whitespace-pre-wrap flex items-center gap-2">
-                    {m.content}
-                    {m.isThinking && (
-                      <span className="text-gray-500 text-sm">🌙</span>
-                    )}
-                  </div>
+                  {m.isThinking ? (
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
+                      <span>AI is thinking...</span>
+                    </div>
+                  ) : (
+                    <div className="whitespace-pre-wrap">{m.content}</div>
+                  )}
                   {m.related && m.related.length > 0 && (
                     <div className="mt-3">
                       <div className="text-xs font-semibold text-gray-600 mb-2">Related questions:</div>
